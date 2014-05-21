@@ -1,0 +1,66 @@
+#1 OAuth 1.0a for Martini
+
+Allows your Martini application to support user login via an OAuth 1.0a backend. Requires sessions middleware. 
+
+
+#2 Usage
+
+```go
+package main
+
+import (
+	"github.com/go-martini/martini"
+	"github.com/jonthornton/martini-contrib-oauth1/oauth"
+	"github.com/martini-contrib/sessions"
+)
+
+func main() {
+	m := martini.Classic()
+	m.Use(sessions.Sessions("my_session", sessions.NewCookieStore([]byte("secret123"))))
+	m.Use(oauth1.NewProvider(&oauth1.Options{
+		AuthorizeURL:    "https://api.twitter.com/oauth/authorize",
+		RequestTokenURL: "https://api.twitter.com/oauth/request_token",
+		AccessTokenURL:  "https://api.twitter.com/oauth/access_token",
+		ClientKey:       "client-key",
+		ClientSecret:    "client-secret",
+		BaseURI:         "http://yourapp.com",
+	}))
+
+	// An initialized OAuth client is injected into the handlers
+	m.Get("/", func(oaTransport *oauth1.Transport) string {
+		if !oaTransport.Valid() {
+			return "not logged in, or the access token is expired"
+		}
+		return "logged in"
+	})
+
+	// Routes that require a logged in user can be protected with
+	// the oauth1.LoginRequired handler. If the user is not
+	// authenticated, they will be redirected to the login path.
+	m.Get("/protected", oauth1.LoginRequired, func() string {
+		return "super secret stuff"
+	})
+
+	m.Run()
+}
+```
+
+If a route requires login, you can add `oauth1.LoginRequired` to the handler chain. If user is not logged, they will be automatically redirected to the login path.
+
+```go
+m.Get("/login-required", oauth1.LoginRequired, func() {...})
+```
+
+#2 Auth flow
+
+* `/login` will redirect user to the OAuth 1.0a provider's permissions dialog. If there is a `next` query param provided, the user will redirected to the URL specified by that param afterwards.
+* If user agrees to connect, OAuth 1.0a provider will redirect to `/oauth-callback` to let your app to make the handshake. You need to register `/oauth-callback` as a Redirect URL in your application settings.
+* `/logout` will log the user out. If there is a `next` query param provided, user is redirected to the next page afterwards.
+
+You can customize the login, logout, oauth-callback and error paths, as well as the next URL query param key:
+
+```go
+oauth1.PathLogin = "/my-login"
+oauth1.PathLogout = "/my-logout"
+...
+```
