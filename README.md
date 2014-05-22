@@ -1,9 +1,9 @@
-#1 OAuth 1.0a for Martini
+# OAuth 1.0a for Martini
 
 Allows your Martini application to support user login via an OAuth 1.0a backend. Requires sessions middleware. 
 
 
-#2 Usage
+## Usage
 
 ```go
 package main
@@ -51,7 +51,7 @@ If a route requires login, you can add `oauth1.LoginRequired` to the handler cha
 m.Get("/login-required", oauth1.LoginRequired, func() {...})
 ```
 
-#2 Auth flow
+## Auth flow
 
 * `/login` will redirect user to the OAuth 1.0a provider's permissions dialog. If there is a `next` query param provided, the user will redirected to the URL specified by that param afterwards.
 * If user agrees to connect, OAuth 1.0a provider will redirect to `/oauth-callback` to let your app to make the handshake. You need to register `/oauth-callback` as a Redirect URL in your application settings.
@@ -64,3 +64,5 @@ oauth1.PathLogin = "/my-login"
 oauth1.PathLogout = "/my-logout"
 ...
 ```
+
+*Inspired by [martini-contrib/oauth2](https://github.com/martini-contrib/oauth2)*
