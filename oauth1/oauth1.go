@@ -44,13 +44,13 @@ type Options struct {
 	RequestTokenURL string
 	AuthorizeURL    string
 	AccessTokenURL  string
-	BaseURI         string
+	BaseURL         string
 }
 
 type Transport struct {
 	Client  oauth.Client
 	Token   *oauth.Credentials
-	BaseURI string
+	baseURL string
 }
 
 func (this *Transport) Valid() bool {
@@ -91,7 +91,7 @@ Sample usage:
 		AccessTokenURL:  "https://api.twitter.com/oauth/access_token",
 		ClientKey:       "your-apps-oauth-api-key",
 		ClientSecret:    "your-apps-oauth-api-secret",
-		BaseURI:         "http://yourapp.com",
+		BaseURL:         "http://yourapp.com",
 	}))
 */
 func NewProvider(opts *Options) martini.Handler {
@@ -111,7 +111,7 @@ func NewProvider(opts *Options) martini.Handler {
 		client := Transport{
 			Client:  baseClient,
 			Token:   token,
-			BaseURI: opts.BaseURI,
+			baseURL: opts.BaseURL,
 		}
 
 		if r.Method == "GET" {
@@ -154,7 +154,7 @@ func login(oaTransport *Transport, s sessions.Session, w http.ResponseWriter, r 
 
 	params := url.Values{}
 	params.Add(KeyNextURL, nextURL)
-	callbackURL := oaTransport.BaseURI + PathCallback + "?" + params.Encode()
+	callbackURL := oaTransport.baseURL + PathCallback + "?" + params.Encode()
 	tempToken, err := oaTransport.Client.RequestTemporaryCredentials(http.DefaultClient, callbackURL, nil)
 	if err != nil {
 		log.Fatal("RequestTemporaryCredentials:", err)
