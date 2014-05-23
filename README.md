@@ -29,7 +29,7 @@ func main() {
 	// An initialized OAuth client is injected into the handlers
 	m.Get("/", func(oaTransport *oauth1.Transport) string {
 		if !oaTransport.Valid() {
-			return "not logged in, or the access token is expired"
+			return "not logged in"
 		}
 		return "logged in"
 	})
@@ -49,6 +49,38 @@ If a route requires login, you can add `oauth1.LoginRequired` to the handler cha
 
 ```go
 m.Get("/login-required", oauth1.LoginRequired, func() {...})
+```
+
+## Authenticated Requests
+
+The OAuth1 middleware injects a `Transport` struct into route handlers that contains a [Go-OAuth](https://github.com/garyburd/go-oauth) client and tokens.
+
+Use the `Valid()` method to check if the user has been authenticated:
+
+```go
+m.Get("/", func(oaTransport *oauth1.Transport) string {
+	if oaTransport.Valid() {
+		return "logged in"
+	} else {
+		return "not logged in"
+	}
+})
+```
+
+Use the GO-OAuth client to make authenticated requests. Refer to the [GO-OAuth project](https://github.com/garyburd/go-oauth) for client documentation.
+
+```go
+m.Get("/protected", oauth1.LoginRequired, func(oaTransport *oauth1.Transport) string {
+	resp, err := oaTransport.Client.Get(http.DefaultClient, oaTransport.Token,
+		"https://api.twitter.com/1.1/statuses/home_timeline.json", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+	respBytes, _ := ioutil.ReadAll(resp.Body)
+	return string(respBytes)
+})
 ```
 
 ## Auth flow
