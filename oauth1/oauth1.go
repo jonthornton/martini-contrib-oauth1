@@ -31,6 +31,9 @@ const (
 	codeRedirect = 302
 	keyToken     = "oauth1_access_token"
 	keyTempToken = "oauth1_temp_token"
+)
+
+var (
 	KeyNextURL   = "next"
 	PathLogin    = "/login"
 	PathLogout   = "/logout"
